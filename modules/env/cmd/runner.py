@@ -63,6 +63,47 @@ def run(cmd, cwd=None, env=None, timeout=60, source="user", verbose=None):
     if env:
         run_env.update(env)
 
+    # Cloud Auto-Delegation for heavy development commands (saves phone CPU & memory)
+    auto_cloud = os.environ.get("AGY_CLOUD_AUTO", "1") == "1"
+    is_heavy = any(k in cmd.lower() for k in [
+        "pip ", "pip3 ", "npm ", "npx ", "pnpm ", "yarn ",
+        "pytest", "python -m venv", "python3 -m venv",
+        "cargo ", "rustc ", "go build", "go run", "go test",
+        "make ", "cmake ", "gcc ", "g++ ", "clang ", "git clone"
+    ])
+    
+    if auto_cloud and is_heavy and source != "device":
+        try:
+            mod_cli = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cli")
+            if mod_cli not in sys.path:
+                sys.path.insert(0, mod_cli)
+            import agy_cloud
+            if verbose:
+                print(f"{CLR_BLUE}⚡ Routing heavy command to 16-vCPU Cloud Runner (Google Drive)...{CLR_RESET}")
+            c_res = agy_cloud.make_request("exec", {"cmd": cmd, "cwd": cwd, "timeout": timeout})
+            if "status_code" not in c_res and "error" not in c_res:
+                stdout_str = c_res.get("stdout", "")
+                stderr_str = c_res.get("stderr", "")
+                exit_code = c_res.get("exit_code", 0)
+                status = "SUCCESS" if exit_code == 0 else "FAILED"
+                # Short-circuit successful cloud execution
+                duration_ms = int((time.time() - start_ts) * 1000)
+                if verbose:
+                    color = CLR_GREEN if status == "SUCCESS" else CLR_RED
+                    print(f"{color}└─ [CLOUD DONE] Exit: {exit_code} ({duration_ms}ms){CLR_RESET}")
+                return {
+                    "cmd_id": cmd_id,
+                    "command": cmd,
+                    "status": status,
+                    "exit_code": exit_code,
+                    "duration_ms": duration_ms,
+                    "stdout": stdout_str,
+                    "stderr": stderr_str,
+                    "cloud": True
+                }
+        except Exception:
+            pass  # Fallback to local execution if cloud is unreachable
+
     try:
         proc = subprocess.run(
             cmd,

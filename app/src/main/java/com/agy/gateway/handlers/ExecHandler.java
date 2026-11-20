@@ -39,6 +39,7 @@ public final class ExecHandler {
         String source = payload.optString("source", "agent");
         long timeoutMs = payload.optLong("timeout_ms", 30000);
         boolean useRish = payload.optBoolean("rish", false);
+        boolean useCloud = payload.optBoolean("cloud", false);
         String cwdPath = payload.optString("cwd", context.getFilesDir().getAbsolutePath());
 
         String cmdId = "cmd_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4);
@@ -68,7 +69,10 @@ public final class ExecHandler {
 
         try {
             ProcessBuilder pb;
-            if (useRish) {
+            File cloudBridge = new File(context.getFilesDir(), "usr/bin/agy-cloud");
+            if (useCloud && cloudBridge.exists()) {
+                pb = new ProcessBuilder(cloudBridge.getAbsolutePath(), "exec", cmd);
+            } else if (useRish) {
                 pb = new ProcessBuilder(resolveRishPath(), "-c", cmd);
             } else {
                 pb = new ProcessBuilder("/system/bin/sh", "-c", cmd);

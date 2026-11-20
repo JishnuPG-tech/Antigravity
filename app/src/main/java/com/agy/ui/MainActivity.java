@@ -139,6 +139,11 @@ public class MainActivity extends Activity
         themeManager = new ThemeManager(this);
         themeManager.applyToActivity(this);
 
+        java.io.File gdriveDir = new java.io.File(getFilesDir(), "GoogleDrive");
+        if (!gdriveDir.exists()) {
+            gdriveDir.mkdirs();
+        }
+
 
         oauthManager = new OAuthManager();
         runtimeManager = new RuntimeManager(this);
