@@ -37,6 +37,68 @@ No PRoot, chroot, or virtualization overhead. Antigravity runs **bare-metal insi
 
 ---
 
+
+---
+
+## Hybrid Cloud & Edge Architecture (Upgrades in this Fork)
+
+> **Base Project Attribution:** This project is built upon the foundational native Android runtime created by [werdio325-png/antigravity-android](https://github.com/werdio325-png/antigravity-android).
+>
+> Rather than rebuilding an IDE from scratch, the primary focus of this fork is **feature enhancement and hardware limitation removal**: overcoming the physical ceilings of mobile devices (thermal throttling, high RAM consumption during builds, battery drain, and storage saturation) by turning the mobile app into a hybrid edge-to-cloud development powerhouse.
+
+### Key Upgrades & Features Added
+
+#### 1. Heuristic Cloud Auto-Delegation (ExecHandler.java & runner.py)
+Heavy compilation, packaging, and testing commands are automatically intercepted and offloaded from the phone to a 16-vCPU cloud container (agy_cloud.py):
+- **Auto-Routed Commands:** cargo, rustc, go build, npm, npx, pnpm, pip, pytest, cmake, make, gcc, docker.
+- **Zero Thermal Throttling:** The phone remains cool and battery-efficient while high-core cloud servers handle the heavy lifting.
+- **Automatic Fallback:** If disconnected from the cloud, tasks safely fall back to local device execution.
+
+#### 2. WebView Virtual Path Mapping (web/patch_main.py)
+Injected a bidirectional virtual path abstraction layer directly into the core editor bundle:
+- Clean Aliasing: Maps verbose internal storage paths into clean virtual mount aliases:
+  - file:///GoogleDrive/ <-> /data/user/0/com.agy/files/GoogleDrive
+  - file:///local/downloads/ <-> /storage/emulated/0/Download
+  - file:///local/documents/ <-> /storage/emulated/0/Documents
+- Real-Time Directory Sync: New folders and files created in the editor trigger real-time directory synchronization with cloud Google Drive.
+
+#### 3. Shizuku Elevated Hardware Bridge (rish)
+Preserves native on-device hardware capabilities through Shizuku IPC (uid=2000):
+- Direct APK installation and uninstallation (pm install -r)
+- Real-time logcat stream capture and crash diagnostics
+- Hardware property queries and battery status monitoring without requiring root.
+
+#### 4. Persistent Cloud Storage & Google Drive Integration
+- Cloud workspace (/data/antigravity) automatically syncs bidirectionally with Google Drive.
+- Heavy build caches (node_modules, target, .venv) remain exclusively in the cloud container to preserve phone storage.
+
+---
+
+## Cloud Runner Configuration & Setup
+
+The cloud runner is hosted on a high-performance 16-vCPU container running FastAPI and Nginx.
+
+### Environment Variables
+Configure the following in your environment:
+
+```env
+AGY_CLOUD_URL=https://jishnupg-hermes.hf.space/antigravity
+AGY_CLOUD_TOKEN=your_secure_auth_token
+AGY_CLOUD_AUTO=1
+```
+
+### Manual Cloud CLI Usage
+```bash
+# Execute any command directly on the 16-vCPU cloud runner:
+agy-cloud exec "cargo build --release"
+agy-cloud exec "npm install"
+
+# Check cloud status and health:
+agy-cloud status
+```
+
+---
+
 ### Highlights in v2.4
 
 * **Modular Core:** Clean separation into 6 standalone subsystems (`modules/*`) with independent test suites.
