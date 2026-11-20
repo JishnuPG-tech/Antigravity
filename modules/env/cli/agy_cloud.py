@@ -12,7 +12,7 @@ import sys
 import urllib.request
 import urllib.error
 
-DEFAULT_URL = os.environ.get("AGY_CLOUD_URL", "https://jishnupg-hermes.hf.space/antigravity")
+DEFAULT_URL = os.environ.get("AGY_CLOUD_URL", "https://<YOUR_CLOUD_RUNNER_URL>/antigravity")
 AUTH_TOKEN = os.environ.get("AGY_CLOUD_TOKEN", os.environ.get("AUTH_TOKEN", ""))
 
 CLOUD_KEYWORDS = [

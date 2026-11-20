@@ -157,7 +157,7 @@ def patch_google_drive(content):
 
     # 8. Patch createDirectory in wqc to immediately sync created folders to cloud Google Drive:
     old_create_dir = 'n(await m(a.lsClient.createDirectory(r)))'
-    new_create_dir = 'n(await m(a.lsClient.createDirectory(r)));try{fetch("https://jishnupg-hermes.hf.space/antigravity/files/mkdir",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({path:q.replace(/^file:\\/\\//,"").replace(/^\\/data\\/user\\/0\\/com\\.agy\\/files\\/GoogleDrive\\/?/,"")})}).catch(()=>{})}catch(_){}'
+    new_create_dir = 'n(await m(a.lsClient.createDirectory(r)));try{fetch("/api/cloud/files/mkdir",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({path:q.replace(/^file:\\/\\//,"").replace(/^\\/data\\/user\\/0\\/com\\.agy\\/files\\/GoogleDrive\\/?/,"")})}).catch(()=>{})}catch(_){}'
     if old_create_dir in content:
         content = content.replace(old_create_dir, new_create_dir, 1)
         print("[web-patch] Patched createDirectory to trigger real-time Google Drive mkdir")
