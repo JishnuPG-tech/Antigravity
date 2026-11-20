@@ -82,7 +82,7 @@ The cloud runner is hosted on a high-performance 16-vCPU container running FastA
 Configure the following in your environment:
 
 ```env
-AGY_CLOUD_URL=https://jishnupg-hermes.hf.space/antigravity
+AGY_CLOUD_URL=https://<YOUR_CLOUD_RUNNER_URL>/antigravity
 AGY_CLOUD_TOKEN=your_secure_auth_token
 AGY_CLOUD_AUTO=1
 ```
